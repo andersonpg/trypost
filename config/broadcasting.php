@@ -17,7 +17,19 @@ return [
     |
     */
 
-    'default' => env('BROADCAST_CONNECTION', 'null'),
+    'default' => (function () {
+        $driver = env('BROADCAST_CONNECTION', 'null');
+        if ($driver === 'reverb') {
+            $host = env('REVERB_HOST', '127.0.0.1');
+            $port = (int) env('REVERB_PORT', 8080);
+            $fp = @fsockopen($host, $port, $errno, $errstr, 0.05);
+            if (! $fp) {
+                return 'null';
+            }
+            fclose($fp);
+        }
+        return $driver;
+    })(),
 
     /*
     |--------------------------------------------------------------------------

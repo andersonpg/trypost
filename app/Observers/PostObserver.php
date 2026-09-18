@@ -19,7 +19,13 @@ class PostObserver
 {
     public function created(Post $post): void
     {
-        DB::afterCommit(fn () => PostCreated::dispatch($post));
+        DB::afterCommit(function () use ($post): void {
+            try {
+                PostCreated::dispatch($post);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        });
 
         $this->notifyOnboarding($post);
     }
@@ -47,7 +53,13 @@ class PostObserver
 
         $previousStatus = $this->previousStatus($post);
 
-        DB::afterCommit(fn () => PostStatusChanged::dispatch($post, $previousStatus));
+        DB::afterCommit(function () use ($post, $previousStatus): void {
+            try {
+                PostStatusChanged::dispatch($post, $previousStatus);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        });
     }
 
     private function previousStatus(Post $post): ?PostStatus
@@ -74,7 +86,11 @@ class PostObserver
         $account = $post->workspace?->account;
 
         if ($account?->isOnboardingOpen() && $this->otherPosts($account, $post)->doesntExist()) {
-            OnboardingStatusUpdated::dispatchForWorkspace($post->workspace_id, $post->user);
+            try {
+                OnboardingStatusUpdated::dispatchForWorkspace($post->workspace_id, $post->user);
+            } catch (\Throwable $e) {
+                report($e);
+            }
         }
     }
 
