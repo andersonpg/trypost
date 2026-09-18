@@ -92,6 +92,16 @@ class AppServiceProvider extends ServiceProvider
         Cashier::useSubscriptionModel(Subscription::class);
         Cashier::useSubscriptionItemModel(SubscriptionItem::class);
         Cashier::keepPastDueSubscriptionsActive();
+
+        $this->ensureStorageLink();
+    }
+
+    protected function ensureStorageLink(): void
+    {
+        $link = public_path('storage');
+        if (! file_exists($link) && ! is_link($link)) {
+            @symlink(storage_path('app/public'), $link);
+        }
     }
 
     protected function configureMorphMap(): void

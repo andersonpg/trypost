@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'public'),
+    'default' => in_array(env('FILESYSTEM_DISK', 'public'), ['local', '', null], true) ? 'public' : env('FILESYSTEM_DISK', 'public'),
 
     /*
     |--------------------------------------------------------------------------
